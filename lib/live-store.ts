@@ -559,10 +559,9 @@ Promise<CommuteProfile> {
       ),
 
     weeklySchedule:
-      scheduleFromRows(
-        scheduleResult.data
-          as ScheduleRow[]
-      ),
+  scheduleFromRows(
+    scheduleResult.data ?? []
+  ),
 
     organizationId:
       organization?.organizationId,
