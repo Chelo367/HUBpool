@@ -1,9 +1,13 @@
+import AuthRequired from "@/components/AuthRequired";
 import CommuteProfileForm from "@/components/CommuteProfileForm";
+import OrganizationGate from "@/components/OrganizationGate";
 
 export default function OnboardingPage() {
-  const liveMode = Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  return (
+    <AuthRequired>
+      <OrganizationGate>
+        <CommuteProfileForm />
+      </OrganizationGate>
+    </AuthRequired>
   );
-  return <main><CommuteProfileForm liveMode={liveMode} /></main>;
 }
