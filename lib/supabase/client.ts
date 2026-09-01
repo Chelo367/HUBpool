@@ -1,8 +1,4 @@
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+"use client";
 
-export function createClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key) return null;
-  return createSupabaseClient(url, key);
-}
+// Compatibility wrapper for the older prototype path.
+export { getSupabaseBrowserClient as createClient } from "@/lib/supabase-browser";

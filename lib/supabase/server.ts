@@ -1,10 +1,6 @@
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-
-export function createServiceClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceKey) return null;
-  return createSupabaseClient(url, serviceKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+// HUBpool V3 does not use a privileged Supabase service client.
+// Do not add a service_role key to the public pilot. V4 will add a narrowly
+// scoped server-only implementation when authenticated route caching is wired.
+export function createServiceClient(): never {
+  throw new Error("Privileged Supabase access is intentionally disabled in HUBpool V3.");
 }

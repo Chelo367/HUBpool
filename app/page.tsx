@@ -1,6 +1,11 @@
 import Link from "next/link";
 
 export default function HomePage() {
+  const liveMode = Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  );
+
   return (
     <main>
       <section className="hero">
@@ -8,11 +13,11 @@ export default function HomePage() {
           <p className="eyebrow eyebrowOnDark">Valencia HUB · smarter commuting</p>
           <h1>One HUB.<br />Fewer cars.</h1>
           <p className="lede ledeOnDark">
-            HUBpool finds colleagues whose route to the same office can realistically be shared — while keeping home addresses private and Google routing costs tiny.
+            HUBpool connects colleagues whose commute to the same office can realistically be shared — while keeping private details protected and routing costs tiny.
           </p>
           <div className="actions">
-            <Link className="button buttonSand" href="/onboarding">Set up my commute</Link>
-            <Link className="button buttonOnDark" href="/matches">View demo matches</Link>
+            <Link className="button buttonSand" href={liveMode ? "/auth" : "/onboarding"}>{liveMode ? "Join the live pilot" : "Set up my commute"}</Link>
+            <Link className="button buttonOnDark" href="/matches">{liveMode ? "View coworker matches" : "View demo matches"}</Link>
           </div>
           <div className="heroPromise">
             <span>Route calculated once</span>
@@ -23,12 +28,26 @@ export default function HomePage() {
 
         <aside className="card metricPanel">
           <div>
-            <p className="eyebrow">Future impact report</p>
-            <div className="metric"><strong>—</strong><span>cars avoided</span></div>
-            <div className="metric"><strong>— kg</strong><span>estimated CO₂ avoided</span></div>
-            <div className="metric"><strong>€—</strong><span>estimated commuting cost saved</span></div>
+            <p className="eyebrow">{liveMode ? "V3 · shared pilot" : "Future impact report"}</p>
+            {liveMode ? (
+              <>
+                <div className="metric"><strong>LIVE</strong><span>shared Supabase database</span></div>
+                <div className="metric"><strong>2+</strong><span>devices can use the same data</span></div>
+                <div className="metric"><strong>🔒</strong><span>phone unlocks after acceptance</span></div>
+              </>
+            ) : (
+              <>
+                <div className="metric"><strong>—</strong><span>cars avoided</span></div>
+                <div className="metric"><strong>— kg</strong><span>estimated CO₂ avoided</span></div>
+                <div className="metric"><strong>€—</strong><span>estimated commuting cost saved</span></div>
+              </>
+            )}
           </div>
-          <p className="muted" style={{ marginBottom: 0 }}>The MVP proves matching first. These sustainability metrics remain ready for a future company-sponsored version.</p>
+          <p className="muted" style={{ marginBottom: 0 }}>
+            {liveMode
+              ? "The live pilot proves real accounts, shared profiles and requests first. Google route scoring comes next without changing the privacy model."
+              : "The MVP proves matching first. These sustainability metrics remain ready for a future company-sponsored version."}
+          </p>
         </aside>
       </section>
 
@@ -41,7 +60,7 @@ export default function HomePage() {
         </div>
         <div className="grid3">
           <article className="card featureCard"><div className="stepNumber">1</div><h3>Add your commute</h3><p className="muted">Choose exact address, postcode, town, or a meeting point. Your precise routing origin stays private.</p></article>
-          <article className="card featureCard"><div className="stepNumber">2</div><h3>Find compatible colleagues</h3><p className="muted">Practical detours are cached once. Weekly shifts are compared separately, so schedule changes do not call Maps.</p></article>
+          <article className="card featureCard"><div className="stepNumber">2</div><h3>Find compatible colleagues</h3><p className="muted">Weekly shifts can change freely. The Google route layer will be cached separately and only rebuilt when an origin changes.</p></article>
           <article className="card featureCard"><div className="stepNumber">3</div><h3>Connect & arrange</h3><p className="muted">Once a request is accepted, phone details unlock and coworkers can agree on exact pickup and weekly plans directly.</p></article>
         </div>
       </section>

@@ -48,3 +48,16 @@ export interface CarpoolRequest {
   status: RequestStatus;
   createdAt: string;
 }
+
+export interface DirectoryCoworker extends CommuteProfile {
+  routeReady: boolean;
+}
+
+export interface LiveCarpoolRequestView extends CarpoolRequest {
+  direction: "incoming" | "outgoing";
+  colleagueId: string;
+  colleagueName: string;
+  colleaguePublicArea: string;
+  colleaguePhoneNumber?: string;
+  colleagueSchedule: WeeklySchedule;
+}

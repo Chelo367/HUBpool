@@ -2,62 +2,106 @@
 
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { loadProfile, saveProfile } from "@/lib/demo-store";
-import type { CommuteProfile, CommuteRole, PrivacyLevel } from "@/lib/types";
+import AuthRequired from "@/components/AuthRequired";
 import WeeklyScheduleEditor from "@/components/WeeklyScheduleEditor";
+import { loadProfile, saveProfile } from "@/lib/demo-store";
+import { loadLiveProfile, saveLiveProfile } from "@/lib/live-store";
+import type { CommuteProfile, CommuteRole, PrivacyLevel } from "@/lib/types";
 
-export default function CommuteProfileForm() {
+export default function CommuteProfileForm({ liveMode = false }: { liveMode?: boolean }) {
   const router = useRouter();
   const [profile, setProfile] = useState<CommuteProfile | null>(null);
   const [saved, setSaved] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [routeChanged, setRouteChanged] = useState(false);
+  const [baselineOrigin, setBaselineOrigin] = useState("");
+  const [needsAuth, setNeedsAuth] = useState(false);
+  const [error, setError] = useState("");
 
-  useEffect(() => setProfile(loadProfile()), []);
-  if (!profile) return <div className="card formCard">Loading commute profile…</div>;
+  useEffect(() => {
+    let active = true;
+    async function load() {
+      try {
+        const loaded = liveMode ? await loadLiveProfile() : loadProfile();
+        if (!active) return;
+        setProfile(loaded);
+        setBaselineOrigin(loaded.originInput.trim().toLowerCase());
+      } catch (err) {
+        if (!active) return;
+        const message = err instanceof Error ? err.message : "Unable to load profile.";
+        if (message.toLowerCase().includes("sign in") || message.toLowerCase().includes("auth")) setNeedsAuth(true);
+        else setError(message);
+      }
+    }
+    void load();
+    return () => { active = false; };
+  }, [liveMode]);
+
+  if (needsAuth) return <AuthRequired />;
+  if (!profile) return <div className="card formCard">{error || "Loading commute profile…"}</div>;
 
   function update<K extends keyof CommuteProfile>(key: K, value: CommuteProfile[K]) {
     setSaved(false);
     if (key === "originInput") {
-      const savedProfile = loadProfile();
-      setRouteChanged(String(value).trim().toLowerCase() !== savedProfile.originInput.trim().toLowerCase());
+      setRouteChanged(String(value).trim().toLowerCase() !== baselineOrigin);
     }
     setProfile((current) => current ? { ...current, [key]: value } : current);
   }
 
-  function onSubmit(event: FormEvent) {
+  async function onSubmit(event: FormEvent) {
     event.preventDefault();
     if (!profile) return;
+    setBusy(true);
+    setError("");
 
-    const previous = loadProfile();
-    const originChanged = previous.originInput.trim().toLowerCase() !== profile.originInput.trim().toLowerCase();
-    const next: CommuteProfile = {
-      ...profile,
-      availableSeats: profile.role === "passenger" ? 0 : profile.availableSeats,
-      // In production, only an origin change should call Google again.
-      routeCalculatedAt: originChanged || !profile.routeCalculatedAt
-        ? new Date().toISOString()
-        : profile.routeCalculatedAt,
-    };
+    try {
+      const next: CommuteProfile = {
+        ...profile,
+        availableSeats: profile.role === "passenger" ? 0 : profile.availableSeats,
+      };
 
-    saveProfile(next);
-    setProfile(next);
-    setRouteChanged(false);
-    setSaved(true);
-    setTimeout(() => router.push("/matches"), 550);
+      if (liveMode) {
+        await saveLiveProfile(next);
+      } else {
+        const originChanged = baselineOrigin !== next.originInput.trim().toLowerCase();
+        next.routeCalculatedAt = originChanged || !next.routeCalculatedAt
+          ? new Date().toISOString()
+          : next.routeCalculatedAt;
+        saveProfile(next);
+      }
+
+      setProfile(next);
+      setBaselineOrigin(next.originInput.trim().toLowerCase());
+      setRouteChanged(false);
+      setSaved(true);
+      setTimeout(() => router.push("/matches"), 450);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to save profile.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
-    <form className="card formCard" onSubmit={onSubmit}>
+    <form className="card formCard" onSubmit={(event: FormEvent<HTMLFormElement>) => void onSubmit(event)}>
       <div className="sectionHeader compactHeader">
         <div>
-          <p className="eyebrow">Your commute</p>
+          <p className="eyebrow">Your commute {liveMode && <span className="inlineLive">LIVE</span>}</p>
           <h2 style={{ marginBottom: 0 }}>Set the route once. Update the week anytime.</h2>
         </div>
       </div>
 
       <div className="notice" style={{ marginBottom: 24 }}>
-        <strong>Cheap by design:</strong> phone and weekly schedule changes never need a Maps call. Only changing your routing origin would recalculate the Google route.
+        <strong>Cheap by design:</strong> phone and weekly schedule changes never need a Maps call. Only changing your routing origin will invalidate the cached Google route once routing is connected.
       </div>
+
+      {liveMode && (
+        <div className="notice liveNotice" style={{ marginBottom: 24 }}>
+          <strong>Shared pilot enabled:</strong> this profile is saved in Supabase and can be seen by other authenticated HUBpool testers. Your exact origin and phone are protected separately.
+        </div>
+      )}
+
+      {error && <div className="notice errorNotice" style={{ marginBottom: 24 }}>{error}</div>}
 
       <section className="formSection">
         <div className="formSectionTitle">
@@ -80,7 +124,7 @@ export default function CommuteProfileForm() {
       <section className="formSection">
         <div className="formSectionTitle">
           <span className="sectionIcon">02</span>
-          <div><h3>Route profile</h3><p>This is the part that determines the cached route match.</p></div>
+          <div><h3>Route profile</h3><p>This is the part that will determine the cached Google route match.</p></div>
         </div>
         <div className="formGrid">
           <div className="field">
@@ -98,8 +142,8 @@ export default function CommuteProfileForm() {
           <div className="field fieldFull">
             <label htmlFor="origin">Home area / routing origin</label>
             <input id="origin" value={profile.originInput} onChange={(e: ChangeEvent<HTMLInputElement>) => update("originInput", e.target.value)} placeholder="e.g. El Perelló, 46420, or an exact address" required />
-            <span className="help">Used privately by the routing engine. Coworkers only see the public area below.</span>
-            {routeChanged && <span className="routeWarning">Route changed — this save would be the one action that recalculates Google routing.</span>}
+            <span className="help">Stored privately. Coworkers only see the public area below.</span>
+            {routeChanged && <span className="routeWarning">Route origin changed — when Google is connected, this will invalidate and rebuild your route cache once.</span>}
           </div>
           <div className="field">
             <label htmlFor="area">Public area shown to colleagues</label>
@@ -135,7 +179,7 @@ export default function CommuteProfileForm() {
       </section>
 
       <div className="actions formActions">
-        <button className="button" type="submit">Save profile & view matches</button>
+        <button className="button" type="submit" disabled={busy}>{busy ? "Saving…" : "Save profile & view matches"}</button>
         {saved && <span className="savedNote">Saved ✓</span>}
       </div>
     </form>
