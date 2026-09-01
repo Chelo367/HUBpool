@@ -5,7 +5,7 @@ import Link from "next/link";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 type AuthRequiredProps = {
-  children: ReactNode;
+  children?: ReactNode;
 };
 
 export default function AuthRequired({

@@ -53,7 +53,7 @@ export default function LiveRequestList() {
   }
 
   if (loading) return <div className="card empty">Loading real carpool connections…</div>;
-  if (needsAuth) return <AuthRequired />;
+  if (needsAuth) return <AuthRequired/>;
   if (!requests.length) return <div className="card empty">No carpool requests yet. Pick a coworker from Matches and send one.</div>;
 
   return (
