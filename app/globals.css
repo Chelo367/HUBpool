@@ -285,10 +285,12 @@ input:disabled { background: #ece9e5; color: #9a9a98; }
   .authIntro { padding: 32px; }
   .authCard { padding: 28px; }
 }
-/* =========================================================
+/*
+=========================================================
    HUBPOOL DEFAULT BRAND
    Neutral SaaS identity — tenant branding comes later
-========================================================= */
+=========================================================
+*/
 
 :root {
   --hubpool-ink: #102a2e;
@@ -315,9 +317,11 @@ input:disabled { background: #ece9e5; color: #9a9a98; }
     0 18px 50px rgba(16, 42, 46, 0.08);
 }
 
-/* =========================================================
+/* 
+=========================================================
    GLOBAL
-========================================================= */
+=========================================================
+*/
 
 body {
   background:
@@ -751,4 +755,251 @@ a {
   .organization-gate {
     margin: 20px auto;
   }
+  /* =========================================================
+   HUBPOOL MOBILE CLEANUP
+   Fixes layout collisions from legacy + neutral styles
+========================================================= */
+
+body {
+  overflow-x: hidden;
+}
+
+/* ---------- NAV ---------- */
+
+@media (max-width: 780px) {
+  .topbar {
+    position: static;
+  }
+
+  .nav {
+    padding: 18px 20px;
+    gap: 18px;
+  }
+
+  .brand {
+    font-size: 1.15rem;
+  }
+
+  .brandMark {
+    width: 42px;
+    height: 42px;
+  }
+
+  .navRight {
+    width: 100%;
+    display: grid;
+    gap: 12px;
+  }
+
+  .navlinks {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+
+    overflow: visible;
+  }
+
+  .navlink {
+    padding: 10px 8px;
+
+    text-align: center;
+
+    border-radius: 10px;
+
+    background: var(--hubpool-surface-soft);
+
+    border: 1px solid var(--hubpool-border);
+
+    color: var(--hubpool-ink-soft);
+
+    font-size: 0.88rem;
+  }
+
+  .navlink:hover {
+    background: var(--hubpool-primary-soft);
+    color: var(--hubpool-primary);
+  }
+
+  .authStatus {
+    width: 100%;
+
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+
+    gap: 8px;
+
+    padding-top: 2px;
+  }
+
+  .authEmail {
+    max-width: 55vw;
+
+    color: var(--hubpool-muted);
+
+    font-size: 0.75rem;
+  }
+
+  .navAuthButton,
+  .navAuthLink {
+    color: var(--hubpool-primary);
+
+    font-size: 0.78rem;
+  }
+
+  .modePill {
+    color: var(--hubpool-primary-strong);
+
+    background: var(--hubpool-primary-soft);
+
+    border-color: rgba(31, 106, 93, 0.2);
+  }
+
+  .modeLive {
+    color: var(--hubpool-primary-strong);
+
+    background: var(--hubpool-primary-soft);
+  }
+}
+
+/* ---------- MAIN ---------- */
+
+@media (max-width: 780px) {
+  main {
+    width: 100%;
+
+    padding:
+      26px
+      16px
+      60px;
+  }
+
+  .card,
+  .panel {
+    border-radius: 20px;
+  }
+
+  h1 {
+    font-size: clamp(2.5rem, 12vw, 3.8rem);
+    line-height: 0.98;
+  }
+
+  h2 {
+    font-size: 2rem;
+    line-height: 1.05;
+  }
+}
+
+/* ---------- HERO ---------- */
+
+.heroMetricCard {
+  padding: 26px;
+
+  display: grid;
+
+  align-content: center;
+
+  gap: 9px;
+}
+
+.heroMetricCard strong {
+  display: block;
+
+  font-size: 2rem;
+
+  line-height: 1;
+
+  margin-top: 4px;
+}
+
+.heroMetricCard > span {
+  display: block;
+
+  font-size: 1.15rem;
+
+  line-height: 1.25;
+}
+
+.heroMetricCard p {
+  margin: 8px 0 0;
+
+  line-height: 1.5;
+}
+
+@media (max-width: 780px) {
+  .hero {
+    grid-template-columns: 1fr;
+
+    gap: 18px;
+  }
+
+  .heroMetricCard {
+    min-height: auto;
+
+    padding: 24px;
+  }
+}
+
+/* ---------- FEATURE CARDS ---------- */
+
+.featureGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 16px;
+}
+
+.featureCard {
+  padding: 22px;
+
+  border-radius: 16px;
+
+  display: grid;
+
+  align-content: start;
+
+  gap: 12px;
+}
+
+.featureCard h3,
+.featureCard p {
+  margin: 0;
+}
+
+.featureCard p {
+  line-height: 1.55;
+
+  color: var(--hubpool-muted);
+}
+
+@media (max-width: 780px) {
+  .featureGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .featureCard {
+    padding: 20px;
+  }
+}
+
+/* ---------- STATS ---------- */
+
+.statsGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 14px;
+}
+
+@media (max-width: 780px) {
+  .statsGrid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
 }
